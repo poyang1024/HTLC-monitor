@@ -17,7 +17,7 @@ func TetherMonitorWorkflow(ctx workflow.Context, tetherContractAddress string) e
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	err := workflow.ExecuteActivity(ctx, activity.MonitorTetherContractActivity, tetherContractAddress).Get(ctx, nil)
+	err := workflow.ExecuteActivity(ctx, activity.MonitorContractActivity, tetherContractAddress).Get(ctx, nil)
 	if err != nil {
 		logger.Error("Tether 監控活動失敗", "error", err)
 		return err

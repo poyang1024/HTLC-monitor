@@ -21,7 +21,7 @@ func main() {
 	w := worker.New(c, "tether-monitor-task-queue", worker.Options{})
 
 	w.RegisterWorkflow(workflow.TetherMonitorWorkflow)
-	w.RegisterActivity(activity.MonitorTetherContractActivity)
+	w.RegisterActivity(activity.MonitorContractActivity)
 
 	err = w.Run(worker.InterruptCh())
 	if err != nil {
