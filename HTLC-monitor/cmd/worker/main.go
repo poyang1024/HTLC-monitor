@@ -18,9 +18,9 @@ func main() {
 	}
 	defer c.Close()
 
-	w := worker.New(c, "tether-monitor-task-queue", worker.Options{})
+	w := worker.New(c, "htlc-monitor-task-queue", worker.Options{})
 
-	w.RegisterWorkflow(workflow.TetherMonitorWorkflow)
+	w.RegisterWorkflow(workflow.HTLCMonitorWorkflow)
 	w.RegisterActivity(activity.MonitorContractActivity)
 
 	err = w.Run(worker.InterruptCh())

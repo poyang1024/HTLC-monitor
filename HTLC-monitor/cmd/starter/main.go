@@ -15,25 +15,22 @@ func main() {
 	}
 	defer c.Close()
 
-	// USDT 合約地址（以太坊主網）
-	// tetherContractAddress := "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-
-	// Sepolia 測試網上的 USDT 合約地址
-	SepoliatetherContractAddress := "0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0"
-
-	// Sepolia 測試網上的 HTCL 合約地址
-	// HTLCContractAddress := ""
+	// Sepolia 測試網上的 HTLC 合約地址
+	HTLCContractAddress := "0x404e1cf018c9974F738644847c6844ebAC8aDe89"
 	
+	// 起始區塊號碼，這裡設置為 0，表示從最新的區塊開始監控
+	// 如果您想從特定區塊開始監控，請將 0 替換為所需的區塊號碼
+	startBlock := int64(0)
 	
 	workflowOptions := client.StartWorkflowOptions{
-		ID:        "tether-monitor-workflow",
-		TaskQueue: "tether-monitor-task-queue",
+		ID:        "htlc-monitor-workflow",
+		TaskQueue: "htlc-monitor-task-queue",
 	}
 
-	we, err := c.ExecuteWorkflow(context.Background(), workflowOptions, workflow.TetherMonitorWorkflow, SepoliatetherContractAddress)
+	we, err := c.ExecuteWorkflow(context.Background(), workflowOptions, workflow.HTLCMonitorWorkflow, HTLCContractAddress, startBlock)
 	if err != nil {
 		log.Fatalln("無法啟動工作流程:", err)
 	}
 
-	log.Println("啟動 Tether 監控工作流程成功。WorkflowID:", we.GetID(), "RunID:", we.GetRunID())
+	log.Println("啟動 HTLC 監控工作流程成功。WorkflowID:", we.GetID(), "RunID:", we.GetRunID())
 }
