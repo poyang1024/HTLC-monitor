@@ -99,43 +99,42 @@ go run cmd/starter/main.go
 graph TD
     %% 初始化階段
     A[1. 交易初始化]:::temporal --> B[2. 生成HTLC參數]:::temporal
-    A --> |a| A1[接收請求]
-    A --> |b| A2[插入記錄]:::db
-    A --> |c| A3[返回ID]:::db
-    B --> |a| B1[生成secret]
-    B --> |b| B2[插入參數]:::db
+    A --> |a| A1[交易系統接收請求]
+    A --> |b| A2[新增交易記錄]:::db
+    A --> |c| A3[有專屬 ID]:::db
+    B --> |a| B1[生成交易專屬 secret]
+    B --> |b| B2[建立交易開始狀態]:::db
 
     %% Asset Contract階段
-    B --> C[3. 創建第一個asset指令 賣家]:::temporal
-    C --> D[4. 驗證asset合約]:::temporal
-    D --> E[5. 創建第一個asset指令 買家]:::temporal
+    B --> C[3. 開始第一個 asset 交易指令 -> 賣家]:::blockchain
+    C --> D[4. 監控 asset 合約]:::temporal
     C --> |a| C1[賣家簽署]:::blockchain
-    C --> |b| C2[更新記錄]:::db
-    D --> |a| D1[平台驗證]:::blockchain
-    D --> |b| D2[更新狀態]:::db
-    E --> |a| E1[買家創建]:::blockchain
-    E --> |b| E2[更新信息]:::db
+    C --> |b| C2[更新狀態記錄 -> asset contract 賣家執行中]:::db
+    D --> |a| D1[鏈上驗證及確認合約，並鎖住 asset]:::blockchain
+    D1 --> |a| D3[平台將 H（a） 傳給買家]
+    D1 --> |b| D4[紀錄 asset 已鎖住的事件並更新狀態]:::db
+    D3 --> E[5.買家確認 asset 狀況，並選擇創建 payment 合約]
+    D --> |b| D2[更新狀態 -> 賣家 init 合約已確認]:::db
+    E --> |b| E2[更新狀態 -> 買家已收到 H（a）]:::db
 
     %% Payment Contract階段
-    E --> F[6. 驗證payment合約]:::temporal
-    F --> G[7. 驗證第一個payment指令]:::temporal
-    G --> H[8. 驗證第二個payment指令]:::temporal
-    F --> |a| F1[驗證交易]:::blockchain
-    F --> |b| F2[更新狀態]:::db
-    G --> |a| G1[賣家驗證]:::blockchain
-    G --> |b| G2[更新狀態]:::db
-    H --> |a| H1[接收secret]:::blockchain
-    H --> |b| H2[記錄揭示]:::db
-    H --> |c| H3[更新支付]:::db
+    E --> F[6. 開始進行 payment 合約]:::blockchain
+    F --> G[7. 監控 payment 合約]:::temporal
+    G1 --> H[8. 買家驗證第二個payment指令]:::temporal
+    F --> |a| F1[買家驗證和確認交易]:::blockchain
+    F --> |b| F2[更新買家 init paymeny 合約狀態且 payment 已鎖住]:::db
+    F1 --> |a| G1[賣家驗證 payment 狀態，並 comfirm payment 交易]:::blockchain
+    G1 --> |b| G2[資料庫更新狀態 -> 賣家已驗證交易]:::db
+    H --> |a| H1[接收到 secret 並成功支付]:::blockchain
+    H --> |b| H2[更新紀錄為 payment complete]:::db
 
     %% 完成階段
-    H --> I[9. 創建第二個asset指令 買家]:::temporal
-    I --> J[10. 完成asset交付]:::temporal
+    H --> I[9. 創建 asset comfirm -> 買家]:::blockchain
+    I --> J[10.監控完成 asset 交付]:::temporal
     J --> K[11. 最終確認]:::temporal
     K --> L[12. 通知參與方]:::temporal
     L --> M[13. 清理和歸檔]:::temporal
-    I --> |a| I1[買家創建]:::blockchain
-    I --> |b| I2[更新狀態]:::db
+    I --> |b| I2[更新買家已經 comfirm asset 狀態]:::db
     J --> |a| J1[執行指令]:::blockchain
     J --> |b| J2[確認完成]:::blockchain
     J --> |c| J3[更新狀態]:::db
@@ -171,8 +170,8 @@ graph TD
 
     %% 圖例
     subgraph 圖例
-    DB[數據庫操作]:::db
-    BC[區塊鏈操作]:::blockchain
+    DB[寫入資料庫]:::db
+    BC[區塊鏈執行合約]:::blockchain
     TM[Temporal監控]:::temporal
     end
 ```
